@@ -19,9 +19,6 @@ Route::middleware(['auth', 'rol:admin,vendedor'])->group(function () {
 });
 
 Route::middleware(['auth', 'rol:admin'])->group(function () {
-    Route::get('/admin', function () {
-        return "Bienvenido admin jijijija!";
-    });
     Route::resource('productos', ProductoController::class);
 });
 
