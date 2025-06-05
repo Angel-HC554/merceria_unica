@@ -1,27 +1,31 @@
+# Imagen base de Laravel oficial
 FROM php:8.2-apache
 
-# Instala extensiones necesarias
+# Instala extensiones necesarias de PHP
 RUN apt-get update && apt-get install -y \
-    libzip-dev unzip zip curl git \
+    git curl zip unzip libzip-dev libpng-dev libonig-dev libxml2-dev \
     && docker-php-ext-install pdo pdo_mysql zip
 
-# Habilita el módulo de reescritura de Apache
+# Habilita Apache mod_rewrite
 RUN a2enmod rewrite
 
-# Instala Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Copia archivo de configuración de Apache personalizado
+COPY apache/apache.conf /etc/apache2/sites-available/000-default.conf
 
-# Copia todo el código de la app
+# Establece directorio de trabajo
+WORKDIR /var/www/html
+
+# Copia todo el proyecto
 COPY . /var/www/html
 
-# Ajusta permisos
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-
-# Establece el working dir
-WORKDIR /var/www/html
+# Instala Composer
+COPY --from=composer:2.6 /usr/bin/composer /usr/bin/composer
 
 # Instala dependencias de Laravel
 RUN composer install --no-dev --optimize-autoloader
 
-# Expone el puerto por donde Apache servirá
+# Asigna permisos
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+
+# Expone el puerto
 EXPOSE 80
